@@ -2,6 +2,8 @@
 
 Este projeto contém um script Python que se conecta a um servidor Lightstreamer para receber dados em tempo real.
 
+-Link: https://demos.lightstreamer.com/ISSLive/
+
 ## Funcionalidades
 - Conexão com o servidor Lightstreamer demo.
 - Assinatura de um item específico (`NODE3000005`) e captura de campos (`Value`, `Status`, `TimeStamp`).
@@ -11,3 +13,4 @@ Este projeto contém um script Python que se conecta a um servidor Lightstreamer
 ## Requisitos
 - Python 3.x
 - Biblioteca `lightstreamer` (`pip install lightstreamer-client-lib` ou equivalente)
+
