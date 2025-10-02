@@ -1,32 +1,52 @@
-# lightstreamer_reader.py
-from lightstreamer import client
+# iss_mimic_value_only.py
 import time
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
 
-SERVER = "https://demos.lightstreamer.com"
-ADAPTER = "ISSLive"
-ITEM = "NODE3000005"
-FIELDS = ["Value","Status","TimeStamp"]
+URL = "https://demos.lightstreamer.com/ISSLive/"
+SEARCH_TERM = "NODE3000005"
+POLL_INTERVAL = 2.0  # segundos
 
-ls = client.LightstreamerClient(SERVER, ADAPTER)
-try:
-    ls.connect()
-    print("Connected to Lightstreamer demo")
-except Exception as e:
-    print("Connect error:", e)
-    raise SystemExit(1)
+def start_driver():
+    options = webdriver.ChromeOptions()
+    options.add_argument("--headless=new")  # roda em background
+    options.add_argument("--disable-gpu")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    driver.set_page_load_timeout(30)
+    return driver
 
-sub = client.Subscription(mode="MERGE", items=[ITEM], fields=FIELDS)
+def main():
+    driver = start_driver()
+    print("Abrindo página:", URL)
+    driver.get(URL)
+    time.sleep(5)  # espera carregar o JS
 
-def on_item_update(item_update):
-    print("UPDATE:", {k: item_update.get(k) for k in FIELDS})
+    last_value = None
 
-sub.addListener({"onItemUpdate": on_item_update})
-ls.subscribe(sub)
+    try:
+        while True:
+            rows = driver.find_elements(By.TAG_NAME, "tr")
+            for r in rows:
+                cells = r.find_elements(By.TAG_NAME, "td")
+                texts = [c.text.strip() for c in cells]
+                if SEARCH_TERM in texts:
+                    # Valor atual do tanque geralmente está na coluna 5 (ajuste se mudar)
+                    value = texts[4]
+                    if value != last_value:
+                        print(f"Valor atual do tanque de urina: {value}")
+                        last_value = value
+            time.sleep(POLL_INTERVAL)
+    except KeyboardInterrupt:
+        print("Parado pelo usuário")
+    finally:
+        try:
+            driver.quit()
+        except Exception:
+            pass
 
-try:
-    while True:
-        time.sleep(2)
-except KeyboardInterrupt:
-    ls.unsubscribe(sub)
-    ls.disconnect()
-    print("Stopped")
+if __name__ == "__main__":
+    main()
