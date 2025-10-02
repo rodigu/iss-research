@@ -1,4 +1,4 @@
-## Lightstreamer Reader
+# Lightstreamer Reader
 
 Este projeto contém um script Python que captura dados em tempo real da Estação Espacial Internacional (ISS), com foco no **nível do tanque de urina** (`NODE3000005`).
 
